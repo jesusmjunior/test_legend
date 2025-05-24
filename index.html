@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 JESUS IA - Search Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .search-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .results-table th {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .results-table tr:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .download-btn {
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2ed573;
+        }
+
+        .popup-blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            color: #333;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Popup Blocker -->
+    <div class="popup-blocker" id="popupBlocker">
+        <div class="popup-content">
+            <h3>🛡️ JESUS IA - Popup Bloqueado</h3>
+            <p>Detectamos uma tentativa de popup. Mantendo você seguro!</p>
+            <button onclick="closePopup()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">OK</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🚀 JESUS IA</div>
+            <div class="subtitle">Sistema de Busca Inteligente - Interface Ghost</div>
+            <div style="font-size: 0.9rem; opacity: 0.8;">
+                Busque filmes, séries, documentos e PDFs com tecnologia avançada
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <form class="search-form" onsubmit="performSearch(event)">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput"
+                    placeholder="Digite o nome do filme, série ou documento..."
+                    required
+                >
+                <button type="submit" class="search-btn">
+                    🔍 Buscar
+                </button>
+            </form>
+
+            <div class="filters">
+                <div class="filter-btn active" data-type="all">Todos</div>
+                <div class="filter-btn" data-type="movies">Filmes</div>
+                <div class="filter-btn" data-type="tv">Séries</div>
+                <div class="filter-btn" data-type="docs">Documentos</div>
+                <div class="filter-btn" data-type="pdf">PDFs</div>
+            </div>
+
+            <div class="status" id="searchStatus">
+                Digite um termo para começar a busca
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <h3 style="margin-bottom: 20px;">📊 Resultados da Busca</h3>
+            
+            <div class="stats" id="searchStats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalResults">0</div>
+                    <div>Resultados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="searchTime">0</div>
+                    <div>Segundos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="sourcesCount">0</div>
+                    <div>Fontes</div>
+                </div>
+            </div>
+
+            <table class="results-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Tamanho</th>
+                        <th>Qualidade</th>
+                        <th>Seeds</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>🔒 JESUS IA v3.0 - Sistema Seguro e Independente</div>
+            <div style="margin-top: 10px;">
+                Desenvolvido com tecnologia fuzzy α → θ | Deploy: GitHub Pages
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Bloqueio de Popup
+        let popupAttempts = 0;
+
+        window.addEventListener('beforeunload', function(e) {
+            // Bloqueia popups em beforeunload
+            e.preventDefault();
+            return null;
+        });
+
+        // Override window.open para bloquear popups
+        const originalOpen = window.open;
+        window.open = function(...args) {
+            popupAttempts++;
+            showPopupBlocked();
+            return null;
+        };
+
+        function showPopupBlocked() {
+            document.getElementById('popupBlocker').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popupBlocker').style.display = 'none';
+        }
+
+        // Configuração de Filtros
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Sistema de Busca Principal
+        let searchCache = new Map();
+        let currentFilter = 'all';
+
+        async function performSearch(event) {
+            event.preventDefault();
+            
+            const query = document.getElementById('searchInput').value.trim();
+            const status = document.getElementById('searchStatus');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            if (!query) return;
+
+            // Mostrar loading
+            status.innerHTML = '<div class="loading"></div>Buscando...';
+            resultsSection.style.display = 'none';
+
+            const startTime = Date.now();
+
+            try {
+                // Simular busca (substituir por API real)
+                const results = await searchContent(query);
+                const searchTime = ((Date.now() - startTime) / 1000).toFixed(2);
+
+                // Exibir resultados
+                displayResults(results, searchTime);
+                status.innerHTML = `✅ Busca concluída em ${searchTime}s`;
+                resultsSection.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erro na busca:', error);
+                status.innerHTML = '❌ Erro na busca. Tentando fontes alternativas...';
+                
+                // Fallback para cache local
+                const cachedResults = getCachedResults(query);
+                if (cachedResults.length > 0) {
+                    displayResults(cachedResults, '0.1');
+                    status.innerHTML = '📦 Resultados do cache local';
+                    resultsSection.style.display = 'block';
+                } else {
+                    status.innerHTML = '❌ Nenhum resultado encontrado';
+                }
+            }
+        }
+
+        async function searchContent(query) {
+            // Cache check
+            const cacheKey = `${query}_${currentFilter}`;
+            if (searchCache.has(cacheKey)) {
+                return searchCache.get(cacheKey);
+            }
+
+            // Simular API de busca independente
+            const mockResults = generateMockResults(query);
+            
+            // Armazenar no cache
+            searchCache.set(cacheKey, mockResults);
+            
+            return mockResults;
+        }
+
+        function generateMockResults(query) {
+            // Simular resultados baseados na busca
+            const results = [];
+            const types = ['Filme', 'Série', 'Documentário', 'PDF'];
+            const qualities = ['720p', '1080p', '4K', 'BluRay'];
+            
+            for (let i = 0; i < Math.random() * 10 + 5; i++) {
+                results.push({
+                    title: `${query} ${i + 1}`,
+                    type: types[Math.floor(Math.random() * types.length)],
+                    size: `${(Math.random() * 3 + 0.5).toFixed(1)}GB`,
+                    quality: qualities[Math.floor(Math.random() * qualities.length)],
+                    seeds: Math.floor(Math.random() * 1000 + 10),
+                    magnet: `magnet:?xt=urn:btih:${generateHash()}&dn=${encodeURIComponent(query)}`
+                });
+            }
+            
+            return results.sort((a, b) => b.seeds - a.seeds);
+        }
+
+        function generateHash() {
+            return Array.from({length: 40}, () => 
+                Math.floor(Math.random() * 16).toString(16)
+            ).join('');
+        }
+
+        function displayResults(results, searchTime) {
+            const tbody = document.getElementById('resultsBody');
+            const totalResults = document.getElementById('totalResults');
+            const searchTimeElement = document.getElementById('searchTime');
+            const sourcesCount = document.getElementById('sourcesCount');
+
+            // Limpar resultados anteriores
+            tbody.innerHTML = '';
+
+            // Atualizar estatísticas
+            totalResults.textContent = results.length;
+            searchTimeElement.textContent = searchTime;
+            sourcesCount.textContent = '3'; // Simular múltiplas fontes
+
+            // Adicionar resultados à tabela
+            results.forEach(result => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${result.title}</strong></td>
+                    <td><span style="background: rgba(46,213,115,0.3); padding: 4px 8px; border-radius: 10px; font-size: 12px;">${result.type}</span></td>
+                    <td>${result.size}</td>
+                    <td>${result.quality}</td>
+                    <td><span style="color: #2ed573;">${result.seeds}</span></td>
+                    <td>
+                        <button class="download-btn" onclick="handleDownload('${result.magnet}', '${result.title}')">
+                            ⬇️ Download
+                        </button>
+                    </td>
+                `;
+            });
+        }
+
+        function handleDownload(magnet, title) {
+            // Simular download seguro
+            const status = document.getElementById('searchStatus');
+            status.innerHTML = `🔄 Preparando download: ${title}`;
+            
+            setTimeout(() => {
+                status.innerHTML = `✅ Link de download copiado para área de transferência`;
+                // Copiar magnet link
+                navigator.clipboard.writeText(magnet).catch(() => {
+                    // Fallback se clipboard não funcionar
+                    prompt('Link de download:', magnet);
+                });
+            }, 1000);
+        }
+
+        function getCachedResults(query) {
+            // Retornar resultados em cache se disponível
+            for (const [key, value] of searchCache.entries()) {
+                if (key.includes(query.toLowerCase())) {
+                    return value;
+                }
+            }
+            return [];
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 JESUS IA Interface Ghost carregada');
+            
+            // Configurar service worker para cache
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('Service Worker não disponível');
+                });
+            }
+            
+            // Foco automático no campo de busca
+            document.getElementById('searchInput').focus();
+        });
+
+        // Tratamento de erros global
+        window.addEventListener('error', function(e) {
+            console.error('Erro capturado:', e.error);
+            document.getElementById('searchStatus').innerHTML = 
+                '⚠️ Erro detectado. Sistema operando em modo offline.';
+        });
+    </script>
+</body>
+</html>
