@@ -1,0 +1,33 @@
+# requirements.txt - JESUS IA Python Backend
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# HTTP Clients
+aiohttp==3.9.1
+requests==2.31.0
+
+# Web Scraping
+beautifulsoup4==4.12.2
+selenium==4.16.0
+lxml==4.9.3
+
+# AI Integration
+google-generativeai==0.3.2
+
+# Database
+sqlite3
+
+# Utilities
+python-multipart==0.0.6
+pydantic==2.5.0
+python-dotenv==1.0.0
+
+# Optional: Proxy Support
+requests[socks]==2.31.0
+aiohttp[speedups]==3.9.1
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
