@@ -1,291 +1,374 @@
-// config.js - Configuração Automática JESUS IA
-// ARQUIVO OBRIGATÓRIO - Sem ele o frontend não funciona!
+// config.js - Configuração REAL JESUS IA
+// SEM MODO DEMO - Apenas Backend Real
 
 (function() {
     'use strict';
 
     // === DETECÇÃO DE AMBIENTE ===
-    const isGitHub = window.location.hostname.includes('github.io') || 
-                     window.location.hostname.includes('pages.dev') ||
-                     window.location.hostname.includes('netlify.app') ||
-                     window.location.hostname.includes('vercel.app');
-
     const isLocal = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1' ||
                     window.location.protocol === 'file:';
 
-    // === CONFIGURAÇÕES POR AMBIENTE ===
+    const isGitHub = window.location.hostname.includes('github.io') || 
+                     window.location.hostname.includes('pages.dev');
+
+    // === CONFIGURAÇÕES REAIS ===
     const configs = {
-        // Configuração para desenvolvimento local
+        // Configuração local - Backend REAL
         local: {
             apiUrl: 'http://localhost:3000/api',
             socketUrl: 'http://localhost:3000',
             features: {
                 realBackend: true,
                 websocket: true,
-                scraping: true,
-                geminiAI: true
+                scraping: true,  // SCRAPING REAL
+                geminiAI: true,  // GEMINI REAL
+                authentication: true,
+                cache: true
             },
+            sites: [
+                { name: '1337x', url: 'https://1337x.to', active: true },
+                { name: 'YTS', url: 'https://yts.mx', active: true },
+                { name: 'RARBG', url: 'https://rarbgmirror.org', active: true },
+                { name: 'LimeTorrents', url: 'https://www.limetorrents.lol', active: true },
+                { name: 'TorrentGalaxy', url: 'https://torrentgalaxy.to', active: true }
+            ],
             fallback: false
         },
 
-        // Configuração para GitHub Pages (modo demo)
-        github: {
-            apiUrl: '/api', // Será interceptado
-            socketUrl: null, // WebSocket desabilitado
+        // Configuração produção - Backend REAL
+        production: {
+            apiUrl: window.location.origin + '/api',
+            socketUrl: window.location.origin,
             features: {
-                realBackend: false,
-                websocket: false,
-                scraping: false, // Simulado
-                geminiAI: false  // Simulado
+                realBackend: true,
+                websocket: true,
+                scraping: true,  // SCRAPING REAL
+                geminiAI: true,  // GEMINI REAL
+                authentication: true,
+                cache: true
             },
-            fallback: true
+            sites: [
+                { name: '1337x', url: 'https://1337x.to', active: true },
+                { name: 'YTS', url: 'https://yts.mx', active: true },
+                { name: 'RARBG', url: 'https://rarbgmirror.org', active: true },
+                { name: 'LimeTorrents', url: 'https://www.limetorrents.lol', active: true },
+                { name: 'TorrentGalaxy', url: 'https://torrentgalaxy.to', active: true }
+            ],
+            fallback: false
+        },
+
+        // Erro - GitHub Pages não suportado para backend real
+        github: {
+            error: true,
+            message: 'GitHub Pages não suporta backend real. Use um servidor para funcionalidades completas.',
+            redirectUrl: 'https://github.com/[seu-usuario]/jesus-ia#deploy'
         }
     };
 
     // === SELEÇÃO DE CONFIGURAÇÃO ===
     let selectedConfig;
+    let environment;
     
     if (isLocal) {
         selectedConfig = configs.local;
-        console.log('🏠 Ambiente: Desenvolvimento Local');
-    } else {
+        environment = 'local';
+        console.log('🏠 Ambiente: Local - Backend REAL');
+    } else if (isGitHub) {
         selectedConfig = configs.github;
-        console.log('🌐 Ambiente: GitHub Pages (Demo)');
+        environment = 'github';
+        console.log('⚠️ Ambiente: GitHub Pages - Backend REAL requerido');
+    } else {
+        selectedConfig = configs.production;
+        environment = 'production';
+        console.log('🚀 Ambiente: Produção - Backend REAL');
     }
 
-    // === SIMULADOR PARA GITHUB PAGES ===
-    class GitHubPagesSimulator {
+    // === VERIFICAÇÃO DE BACKEND REAL ===
+    class BackendChecker {
         constructor() {
-            this.isActive = selectedConfig.fallback;
+            this.isBackendAlive = false;
+            this.backendVersion = null;
+            this.lastCheck = null;
         }
 
-        // Simular API de busca
-        async simulateSearch(query, mode) {
-            console.log(`🎭 Simulando busca: "${query}" (${mode})`);
-            
-            // Simular delay de rede
-            await this.delay(2000 + Math.random() * 3000);
-            
-            const results = this.generateMockResults(query, mode);
-            
-            return {
-                searchId: 'sim_' + Date.now().toString(36),
-                results: results,
-                metadata: {
-                    query: query,
-                    mode: mode,
-                    totalResults: results.length,
-                    processingTime: 2000 + Math.random() * 3000,
-                    sourcesUsed: 3,
-                    avgQualityScore: Math.round(60 + Math.random() * 30)
-                }
-            };
-        }
-
-        generateMockResults(query, mode) {
-            const baseResults = [
-                {
-                    title: `${query} [2024] 1080p BluRay`,
-                    type: 'Filme',
-                    size: '2.4GB',
-                    quality: '1080p',
-                    seeds: 156,
-                    leeches: 23,
-                    magnet: this.generateMagnet(query),
-                    source: '1337x',
-                    sourceReliability: 0.95,
-                    qualityScore: 0.87,
-                    confidence: 0.91
-                },
-                {
-                    title: `${query} S01 Complete 720p WEB-DL`,
-                    type: 'Série',
-                    size: '8.2GB',
-                    quality: '720p',
-                    seeds: 89,
-                    leeches: 12,
-                    magnet: this.generateMagnet(query),
-                    source: 'YTS',
-                    sourceReliability: 0.88,
-                    qualityScore: 0.76,
-                    confidence: 0.83
-                },
-                {
-                    title: `${query} Documentary 4K UHD`,
-                    type: 'Documentário',
-                    size: '12.8GB',
-                    quality: '4K',
-                    seeds: 234,
-                    leeches: 45,
-                    magnet: this.generateMagnet(query),
-                    source: 'RARBG',
-                    sourceReliability: 0.92,
-                    qualityScore: 0.94,
-                    confidence: 0.88
-                }
-            ];
-
-            // Para modo IA, adicionar sugestões específicas
-            if (mode === 'ai-assistant') {
-                baseResults.push({
-                    title: `Sugestão IA: ${query} - Versão Recomendada`,
-                    type: 'Sugestão IA',
-                    size: '3.1GB',
-                    quality: 'Gemini AI',
-                    seeds: 95,
-                    leeches: 8,
-                    magnet: this.generateMagnet(query),
-                    source: 'Gemini AI',
-                    description: 'Resultado otimizado baseado em análise semântica',
-                    sourceReliability: 0.95,
-                    qualityScore: 0.89,
-                    confidence: 0.92,
-                    aiGenerated: true
-                });
+        async checkBackend() {
+            if (selectedConfig.error) {
+                return false;
             }
 
-            // Randomizar resultados
-            const numResults = 3 + Math.floor(Math.random() * 7);
-            return baseResults.slice(0, numResults);
+            try {
+                console.log('🔍 Verificando backend real...');
+                
+                const response = await fetch(`${selectedConfig.apiUrl}/health`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.isBackendAlive = true;
+                    this.backendVersion = data.version;
+                    this.lastCheck = Date.now();
+                    
+                    console.log('✅ Backend REAL conectado:', data);
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Backend REAL não encontrado:', error.message);
+                this.isBackendAlive = false;
+                return false;
+            }
         }
 
-        generateMagnet(query) {
-            const hash = Array.from({length: 40}, () => 
-                Math.floor(Math.random() * 16).toString(16)).join('');
-            return `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(query)}`;
+        async waitForBackend(maxWait = 30000) {
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWait) {
+                if (await this.checkBackend()) {
+                    return true;
+                }
+                await this.delay(2000);
+                console.log('⏳ Aguardando backend real...');
+            }
+            
+            return false;
         }
 
         delay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
+    }
 
-        // Simular WebSocket events
-        simulateWebSocketEvents(app, query) {
-            if (!app || typeof app.onSearchStarted !== 'function') return;
+    // === AUTHENTICATION MANAGER ===
+    class AuthManager {
+        constructor() {
+            this.token = localStorage.getItem('jesus_ia_token');
+            this.user = null;
+            this.isAuthenticated = false;
+        }
 
-            const events = [
-                { delay: 500, fn: () => app.onSearchStarted({ searchId: 'sim_123', query, mode: 'demo' }) },
-                { delay: 1000, fn: () => app.onAgentStatus({ agent: 'coordinator', status: 'active', message: 'Coordenando busca...' }) },
-                { delay: 1500, fn: () => app.onAgentStatus({ agent: 'scraping', status: 'active', message: 'Iniciando scraping...' }) },
-                { delay: 2500, fn: () => app.onScrapingStatus({ phase: 'scraping', message: 'Buscando em 1337x...' }) },
-                { delay: 3500, fn: () => app.onSiteScraping({ site: '1337x', message: 'Processando resultados...' }) },
-                { delay: 4000, fn: () => app.onAgentStatus({ agent: 'aggregator', status: 'active', message: 'Agregando resultados...' }) },
-                { delay: 4500, fn: () => app.onProcessingStatus({ phase: 'deduplication', before: 15, after: 8 }) }
-            ];
+        setToken(token) {
+            this.token = token;
+            localStorage.setItem('jesus_ia_token', token);
+        }
 
-            events.forEach(event => {
-                setTimeout(event.fn, event.delay);
-            });
+        clearToken() {
+            this.token = null;
+            localStorage.removeItem('jesus_ia_token');
+        }
+
+        getAuthHeaders() {
+            return this.token ? {
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json'
+            } : {
+                'Content-Type': 'application/json'
+            };
+        }
+
+        async login(username, password) {
+            try {
+                const response = await fetch(`${selectedConfig.apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.setToken(data.token);
+                    this.user = data.user;
+                    this.isAuthenticated = true;
+                    console.log('✅ Login realizado:', this.user.username);
+                    return { success: true, user: this.user };
+                } else {
+                    throw new Error(data.error || 'Erro no login');
+                }
+            } catch (error) {
+                console.error('❌ Erro login:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        logout() {
+            this.clearToken();
+            this.user = null;
+            this.isAuthenticated = false;
+            console.log('👋 Logout realizado');
+        }
+
+        async checkAuth() {
+            if (!this.token) return false;
+
+            try {
+                const response = await fetch(`${selectedConfig.apiUrl}/stats`, {
+                    headers: this.getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    this.isAuthenticated = true;
+                    return true;
+                } else {
+                    this.logout();
+                    return false;
+                }
+            } catch (error) {
+                this.logout();
+                return false;
+            }
         }
     }
 
-    // === API INTERCEPTOR PARA GITHUB ===
-    class APIInterceptor {
+    // === REAL API CLIENT ===
+    class RealAPIClient {
         constructor() {
-            this.simulator = new GitHubPagesSimulator();
-            this.setupInterceptor();
+            this.baseUrl = selectedConfig.apiUrl;
+            this.auth = new AuthManager();
         }
 
-        setupInterceptor() {
-            if (!selectedConfig.fallback) return;
+        async makeRequest(endpoint, options = {}) {
+            const url = `${this.baseUrl}${endpoint}`;
+            const headers = this.auth.getAuthHeaders();
 
-            // Interceptar fetch para APIs
-            const originalFetch = window.fetch;
-            window.fetch = async (url, options) => {
-                // Se for uma chamada para API local, simular
-                if (typeof url === 'string' && url.includes('/api/')) {
-                    return this.handleAPICall(url, options);
+            const config = {
+                ...options,
+                headers: {
+                    ...headers,
+                    ...options.headers
                 }
-                
-                // Caso contrário, usar fetch original
-                return originalFetch(url, options);
             };
 
-            console.log('🎭 Interceptor de API ativo para GitHub Pages');
+            try {
+                const response = await fetch(url, config);
+                
+                if (response.status === 401) {
+                    this.auth.logout();
+                    throw new Error('Sessão expirada. Faça login novamente.');
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`❌ Erro API ${endpoint}:`, error);
+                throw error;
+            }
         }
 
-        async handleAPICall(url, options) {
-            console.log('🎭 Interceptando API call:', url);
-
-            if (url.includes('/api/health')) {
-                return new Response(JSON.stringify({
-                    status: 'ok',
-                    version: '3.0.0-demo',
-                    mode: 'github-pages',
-                    services: {
-                        redis: 'simulated',
-                        gemini: 'simulated',
-                        browser: 'simulated'
-                    }
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-
-            if (url.includes('/api/search')) {
-                const body = JSON.parse(options.body || '{}');
-                const result = await this.simulator.simulateSearch(body.query, body.mode);
-                
-                return new Response(JSON.stringify(result), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-
-            // API não suportada
-            return new Response(JSON.stringify({
-                error: 'API simulada - funcionalidade limitada no GitHub Pages'
-            }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' }
+        async search(query, mode, options = {}) {
+            console.log(`🔍 Busca REAL: "${query}" (${mode})`);
+            
+            return await this.makeRequest('/search', {
+                method: 'POST',
+                body: JSON.stringify({ query, mode, options })
             });
+        }
+
+        async getHistory() {
+            return await this.makeRequest('/history');
+        }
+
+        async getSites() {
+            return await this.makeRequest('/sites');
+        }
+
+        async getStats() {
+            return await this.makeRequest('/stats');
+        }
+    }
+
+    // === ERROR HANDLER ===
+    class ErrorHandler {
+        static showBackendError() {
+            if (selectedConfig.error) {
+                // GitHub Pages - mostrar erro
+                setTimeout(() => {
+                    alert(`❌ ERRO: ${selectedConfig.message}\n\nPara usar o sistema completo, você precisa de um servidor rodando o backend.\n\nVisite: ${selectedConfig.redirectUrl}`);
+                }, 1000);
+                return;
+            }
+
+            // Backend local/produção não encontrado
+            setTimeout(() => {
+                const message = `
+❌ BACKEND REAL NÃO ENCONTRADO!
+
+O JESUS IA precisa do backend rodando para funcionar.
+
+🔧 Para iniciar o backend:
+1. Abra o terminal na pasta do projeto
+2. Execute: npm install
+3. Execute: npm start
+4. Aguarde: "Backend REAL rodando na porta 3000"
+5. Recarregue esta página
+
+📍 URL esperada: ${selectedConfig.apiUrl}
+
+🆘 Precisa de ajuda? Verifique o README.md
+                `.trim();
+                
+                alert(message);
+            }, 2000);
         }
     }
 
     // === INICIALIZAÇÃO ===
     window.JesusIAConfig = {
         current: selectedConfig,
-        environment: isLocal ? 'local' : 'github',
-        simulator: selectedConfig.fallback ? new GitHubPagesSimulator() : null,
+        environment: environment,
+        
+        // Serviços
+        backendChecker: new BackendChecker(),
+        auth: new AuthManager(),
+        api: selectedConfig.error ? null : new RealAPIClient(),
         
         // Métodos úteis
         isLocal: () => isLocal,
         isGitHub: () => isGitHub,
-        hasRealBackend: () => selectedConfig.features.realBackend,
-        hasWebSocket: () => selectedConfig.features.websocket,
+        hasRealBackend: () => !selectedConfig.error && selectedConfig.features.realBackend,
+        hasWebSocket: () => !selectedConfig.error && selectedConfig.features.websocket,
+        requiresAuth: () => !selectedConfig.error && selectedConfig.features.authentication,
         
-        // Override de configuração (para testes)
-        override: (newConfig) => {
-            Object.assign(selectedConfig, newConfig);
-            console.log('⚙️ Configuração atualizada:', selectedConfig);
-        }
+        // Status
+        isReady: false,
+        error: selectedConfig.error || false
     };
 
-    // Inicializar interceptor se necessário
-    if (selectedConfig.fallback) {
-        window.JesusIAInterceptor = new APIInterceptor();
-    }
-
-    // Log de inicialização
-    console.log('⚙️ JESUS IA Config inicializado:', {
-        environment: window.JesusIAConfig.environment,
-        hasRealBackend: selectedConfig.features.realBackend,
-        apiUrl: selectedConfig.apiUrl,
-        socketUrl: selectedConfig.socketUrl
-    });
-
-    // Notificar se estiver em modo demo
-    if (selectedConfig.fallback) {
-        setTimeout(() => {
-            if (window.app && typeof window.app.showNotification === 'function') {
-                window.app.showNotification(
-                    '🎭 Modo Demo - Funcionalidades simuladas para GitHub Pages', 
-                    'info'
-                );
+    // Verificar backend se não for erro
+    if (!selectedConfig.error) {
+        window.JesusIAConfig.backendChecker.checkBackend().then(isAlive => {
+            if (isAlive) {
+                window.JesusIAConfig.isReady = true;
+                console.log('🚀 JESUS IA Config REAL inicializado');
+                
+                // Dispará evento personalizado
+                window.dispatchEvent(new CustomEvent('jesusIAReady', {
+                    detail: { config: window.JesusIAConfig }
+                }));
+            } else {
+                ErrorHandler.showBackendError();
             }
-        }, 2000);
+        });
+    } else {
+        // Mostrar erro do GitHub Pages
+        ErrorHandler.showBackendError();
     }
+
+    // Log de configuração
+    console.log('⚙️ JESUS IA Config (REAL):', {
+        environment: environment,
+        hasRealBackend: !selectedConfig.error,
+        apiUrl: selectedConfig.apiUrl,
+        socketUrl: selectedConfig.socketUrl,
+        sites: selectedConfig.sites?.length || 0,
+        error: selectedConfig.error || false
+    });
 
 })();
