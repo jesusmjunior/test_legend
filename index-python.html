@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 JESUS IA - Sistema Python Real</title>
+    <meta name="description" content="Sistema de busca com backend Python + scraping real + IA">
+    <meta name="keywords" content="python, scraping, torrent, IA, busca real">
+    <meta name="author" content="JESUS IA Team">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐍</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3776ab;
+            --secondary: #ffd43b;
+            --accent: #ff6b6b;
+            --success: #2ed573;
+            --error: #ff3838;
+            --warning: #ffa502;
+            --info: #3742fa;
+            --dark: #2f3542;
+            --light: #f1f2f6;
+            --glass: rgba(255,255,255,0.1);
+            --glass-border: rgba(255,255,255,0.2);
+            --python-blue: #3776ab;
+            --python-yellow: #ffd43b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--python-blue) 0%, #4a90c2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* === LOADING SCREEN === */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--python-blue) 0%, #4a90c2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pythonBounce 2s infinite;
+        }
+
+        @keyframes pythonBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) rotate(0deg); }
+            40% { transform: translateY(-30px) rotate(10deg); }
+            60% { transform: translateY(-15px) rotate(-5deg); }
+        }
+
+        .loading-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--python-yellow);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--python-yellow);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-status {
+            margin-top: 20px;
+            font-size: 1rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        /* === NOTIFICATIONS === */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(450px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { border-left: 4px solid var(--success); }
+        .notification.error { border-left: 4px solid var(--error); }
+        .notification.warning { border-left: 4px solid var(--warning); }
+        .notification.info { border-left: 4px solid var(--info); }
+
+        .notification-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            opacity: 0.7;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        /* === HEADER === */
+        .header {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, var(--python-yellow), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .environment-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(55, 118, 171, 0.2);
+            border: 1px solid var(--python-blue);
+            color: var(--python-yellow);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* === CONTAINER PRINCIPAL === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* === PYTHON SYSTEM BANNER === */
+        .python-system-banner {
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.3);
+            animation: pythonGlow 3s ease-in-out infinite alternate;
+            color: white;
+        }
+
+        @keyframes pythonGlow {
+            from { box-shadow: 0 0 20px rgba(55,118,171,0.5); }
+            to { box-shadow: 0 0 30px rgba(255,212,59,0.8); }
+        }
+
+        .python-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .python-subtitle {
+            opacity: 0.95;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        /* === BACKEND STATUS === */
+        .backend-status {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .backend-status.show {
+            display: block;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--python-yellow);
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* === SEÇÃO DE BUSCA === */
+        .search-section {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .search-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--python-yellow), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-subtitle {
+            opacity: 0.9;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .mode-selection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            white-space: nowrap;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .search-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .search-loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        .search-loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--python-yellow);
+            animation: spin 1s linear infinite;
+        }
+
+        /* === TIME LAPSE MODAL === */
+        .time-lapse-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .time-lapse-modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .time-lapse-content {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .time-lapse-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .time-lapse-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--python-yellow), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-query-display {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .close-time-lapse {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .close-time-lapse:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            transition: width 0.5s ease;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .agents-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .agent-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card.active {
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .agent-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .agent-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .agent-status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .live-feed {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .feed-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: slideInLeft 0.3s ease;
+        }
+
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .feed-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            min-width: 50px;
+            font-family: monospace;
+        }
+
+        .feed-icon {
+            font-size: 1rem;
+            min-width: 20px;
+        }
+
+        .feed-message {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .feed-item.success .feed-icon { color: var(--success); }
+        .feed-item.error .feed-icon { color: var(--error); }
+        .feed-item.warning .feed-icon { color: var(--warning); }
+        .feed-item.info .feed-icon { color: var(--info); }
+
+        /* === RESULTS SECTION === */
+        .results-section {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .results-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--python-yellow), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid var(--glass-border);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--python-yellow);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .results-table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .results-table th {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 1px solid var(--glass-border);
+            color: white;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            vertical-align: middle;
+        }
+
+        .results-table tr:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .result-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            color: #ccc;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .type-badge.movie { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .type-badge.series { background: linear-gradient(45deg, #3498db, #2980b9); }
+        .type-badge.real { background: linear-gradient(45deg, var(--python-blue), var(--python-yellow)); }
+        .type-badge.ai { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+
+        .quality-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quality-text {
+            font-weight: bold;
+        }
+
+        .seeds-count {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .confidence-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .confidence-bar {
+            width: 60px;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--python-blue), var(--python-yellow));
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .confidence-text {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, var(--success), var(--info));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* === FOOTER === */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px 20px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--python-yellow), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-subtitle {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .mode-selection {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .mode-btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .agents-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .time-lapse-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .time-lapse-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">🐍</div>
+        <div class="loading-text">JESUS IA Python</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-status" id="loadingStatus">Conectando ao backend Python...</div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🐍 JESUS IA Python</div>
+            <div class="header-info">
+                <div class="environment-badge" id="environmentBadge">
+                    <span>🐍</span>
+                    <span>Conectando...</span>
+                </div>
+                <div class="status-indicator" id="statusIndicator">
+                    <div class="status-dot"></div>
+                    <span>🔄 Verificando backend...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Python System Banner -->
+        <div class="python-system-banner">
+            <div class="python-title">🐍 SISTEMA PYTHON REAL - SCRAPING DIRETO</div>
+            <div class="python-subtitle">
+                Backend Python FastAPI • Scraping real com BeautifulSoup/Selenium • IA Gemini integrada • Cache inteligente
+            </div>
+        </div>
+
+        <!-- Backend Status -->
+        <div class="backend-status" id="backendStatus">
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value" id="backendVersion">-</div>
+                    <div class="status-label">Versão Backend</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="sitesAvailable">-</div>
+                    <div class="status-label">Sites Disponíveis</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="aiStatus">-</div>
+                    <div class="status-label">IA Status</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="cacheStatus">-</div>
+                    <div class="status-label">Cache</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h1 class="search-title">Sistema de Busca Python</h1>
+            <p class="search-subtitle">Backend Python real + Scraping direto dos sites + IA Gemini para organização</p>
+
+            <div class="mode-selection">
+                <div class="mode-btn active" data-mode="scraping">
+                    <span>🕸️</span>
+                    <span>Scraping Python</span>
+                </div>
+                <div class="mode-btn" data-mode="ai-organize">
+                    <span>🤖</span>
+                    <span>IA Organizador</span>
+                </div>
+                <div class="mode-btn" data-mode="memory">
+                    <span>🧠</span>
+                    <span>Cache Inteligente</span>
+                </div>
+            </div>
+
+            <form class="search-form" id="searchForm">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput"
+                    placeholder="Ex: Breaking Bad S01E01 1080p"
+                    required
+                >
+                <button type="submit" class="search-btn" id="searchBtn">
+                    🔍 Buscar Python
+                </button>
+            </form>
+
+            <div class="search-loading" id="searchLoading">
+                <div class="spinner"></div>
+                <span>Python processando...</span>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2 class="results-title">📊 Resultados Python</h2>
+                <div class="results-actions">
+                    <button class="action-btn primary" onclick="exportResults()">
+                        📥 Exportar JSON
+                    </button>
+                    <button class="action-btn secondary" onclick="clearResults()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalResults">0</span>
+                    <div class="stat-label">Resultados</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="searchTime">0.0s</span>
+                    <div class="stat-label">Tempo Python</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="sourcesCount">0</span>
+                    <div class="stat-label">Sites</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="qualityScore">0%</span>
+                    <div class="stat-label">IA Score</div>
+                </div>
+            </div>
+
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>📋 Título</th>
+                            <th>🏷️ Tipo</th>
+                            <th>📦 Tamanho</th>
+                            <th>⭐ Qualidade</th>
+                            <th>🌱 Seeds</th>
+                            <th>🐍 Python Score</th>
+                            <th>🔧 Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Lapse Modal -->
+    <div class="time-lapse-modal" id="timeLapseModal">
+        <div class="time-lapse-content">
+            <button class="close-time-lapse" onclick="closeTimeLapse()">✕</button>
+            
+            <div class="time-lapse-header">
+                <h2 class="time-lapse-title">⚡ Python em Tempo Real</h2>
+                <div class="search-query-display" id="timeLapseQuery">Processando...</div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Iniciando Python...</div>
+            </div>
+
+            <div class="agents-container">
+                <div class="agent-card" id="agentCoordinator">
+                    <span class="agent-icon">🎯</span>
+                    <div class="agent-name">Coordenador</div>
+                    <div class="agent-status">Aguardando</div>
+                </div>
+                <div class="agent-card" id="agentScraping">
+                    <span class="agent-icon">🕸️</span>
+                    <div class="agent-name">Python Scraper</div>
+                    <div class="agent-status">Aguardando</div>
+                </div>
+                <div class="agent-card" id="agentAI">
+                    <span class="agent-icon">🤖</span>
+                    <div class="agent-name">IA Gemini</div>
+                    <div class="agent-status">Aguardando</div>
+                </div>
+                <div class="agent-card" id="agentMemory">
+                    <span class="agent-icon">🧠</span>
+                    <div class="agent-name">Cache Sistema</div>
+                    <div class="agent-status">Aguardando</div>
+                </div>
+                <div class="agent-card" id="agentAggregator">
+                    <span class="agent-icon">📊</span>
+                    <div class="agent-name">Agregador</div>
+                    <div class="agent-status">Aguardando</div>
+                </div>
+            </div>
+
+            <div class="live-feed">
+                <div class="feed-header">📡 Feed Python Real</div>
+                <div id="liveFeedContent">
+                    <div class="feed-item info">
+                        <span class="feed-time">00:00</span>
+                        <span class="feed-icon">🐍</span>
+                        <span class="feed-message">Sistema Python inicializado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-title">🐍 JESUS IA v3.0 - Python Edition</div>
+            <div class="footer-subtitle">
+                Backend Python FastAPI • Scraping real BeautifulSoup/Selenium • IA Gemini • Cache SQLite • Deploy ready
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Include the frontend-python.js code inline
+        ${document.querySelector('#frontend_python_config').content}
+
+        // Initialize the enhanced system
+        let app;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🐍 JESUS IA Python System carregando...');
+            
+            if (window.JesusIAPythonConfig) {
+                app = new window.JesusIAPythonConfig.EnhancedJesusIASystem();
+                window.app = app;
+                app.init();
+            } else {
+                console.error('❌ Frontend Python não carregado corretamente');
+            }
+        });
+
+        // Global Functions
+        function exportResults() {
+            if (!window.app || !window.app.searchResults || window.app.searchResults.length === 0) {
+                window.app?.showNotification('❌ Nenhum resultado para exportar', 'error');
+                return;
+            }
+
+            const data = {
+                timestamp: new Date().toISOString(),
+                system: 'JESUS IA Python v3.0',
+                results: window.app.searchResults
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jesus_ia_python_results_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            window.app?.showNotification('📥 Resultados Python exportados!', 'success');
+        }
+
+        function clearResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            if (resultsSection) {
+                resultsSection.classList.remove('show');
+            }
+            
+            const tbody = document.getElementById('resultsTableBody');
+            if (tbody) {
+                tbody.innerHTML = '';
+            }
+            
+            if (window.app) {
+                window.app.searchResults = [];
+            }
+            
+            window.app?.showNotification('🗑️ Resultados limpos', 'info');
+        }
+
+        function closeTimeLapse() {
+            window.app?.closeTimeLapse();
+        }
+
+        // Error Handling
+        window.addEventListener('error', (e) => {
+            console.error('❌ Erro global:', e.error);
+            window.app?.showNotification('❌ Erro no sistema Python', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('❌ Promise rejeitada:', e.reason);
+            window.app?.showNotification('❌ Erro de comunicação Python', 'error');
+        });
+    </script>
+</body>
+</html>
